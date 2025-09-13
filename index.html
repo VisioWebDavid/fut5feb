@@ -75,7 +75,7 @@
 
     /* PANEL JEFE */
     #panelJefe { max-width:900px; margin:40px auto; display:none; }
-    #tablaJefe { display:none; }
+    #tablaJefe1, #tablaJefe2 { display:none; margin-bottom:20px; }
     #panelJefe table { width:100%; border-collapse:collapse; background:#111; color:#ff1493; border-radius:15px; overflow:hidden; box-shadow:0 0 20px #ff1493aa; }
     #panelJefe th, #panelJefe td { padding:8px; border:1px solid #ff1493; text-align:center; }
     #panelJefe th { background:#000; }
@@ -155,14 +155,34 @@
       <input type="password" id="claveJefe" placeholder="Ingresa clave" style="padding:5px 10px; border-radius:5px; border:1px solid #ff1493;">
       <button onclick="validarClaveJefe()" style="padding:5px 10px; border-radius:5px; background:#ff1493; border:none; cursor:pointer;">Entrar</button>
     </div>
-    <div id="tablaJefe">
+
+    <!-- PRIMER BLOQUE -->
+    <div id="tablaJefe1">
       <table>
         <thead>
           <tr>
-            <th>Nombre</th><th>Teléfono</th><th>CURP</th><th>Fecha Nac.</th><th>Edad</th><th>Categoría</th><th>Años</th><th>Eliminar</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>CURP</th>
+            <th>Fecha Nac.</th>
+            <th>Edad</th>
           </tr>
         </thead>
-        <tbody id="cuerpoTabla"></tbody>
+        <tbody id="cuerpoTabla1"></tbody>
+      </table>
+    </div>
+
+    <!-- SEGUNDO BLOQUE -->
+    <div id="tablaJefe2">
+      <table>
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th>Años</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoTabla2"></tbody>
       </table>
     </div>
   </div>
@@ -231,7 +251,9 @@
     const edad=document.getElementById('edad').value;
     const servicio=document.getElementById('servicio').value;
     const rango=document.getElementById('rango').value;
+
     if(!servicio||!rango){ alert("Selecciona categoría y rango antes de enviar."); return; }
+
     const nuevoRegistro={ nombre, telefono, curp, fecha, edad, servicio, rango };
     db.ref('registros').push(nuevoRegistro,()=>{
       document.getElementById('nombre').value="";
@@ -246,39 +268,53 @@
     });
   }
 
-  function mostrarPanelJefe(){ document.getElementById('panelJefe').style.display="block"; document.getElementById('tablaJefe').style.display="none"; }
+  function mostrarPanelJefe(){
+    document.getElementById('panelJefe').style.display="block";
+    document.getElementById('tablaJefe1').style.display="none";
+    document.getElementById('tablaJefe2').style.display="none";
+  }
 
   function validarClaveJefe(){
     const clave=document.getElementById('claveJefe').value;
-    if(clave==="OscarJr#17"){ mostrarMiniCuadro("🔑 Acceso concedido!"); document.getElementById('tablaJefe').style.display="block"; cargarRegistros(); } 
-    else{ mostrarMiniCuadro("❌ Clave incorrecta!"); document.getElementById('tablaJefe').style.display="none"; }
+    if(clave==="OscarJr#17"){
+      mostrarMiniCuadro("🔑 Acceso concedido!");
+      document.getElementById('tablaJefe1').style.display="block";
+      document.getElementById('tablaJefe2').style.display="block";
+      cargarRegistros();
+    } else{
+      mostrarMiniCuadro("❌ Clave incorrecta!");
+      document.getElementById('tablaJefe1').style.display="none";
+      document.getElementById('tablaJefe2').style.display="none";
+    }
   }
 
   function cargarRegistros(){
-    const cuerpo=document.getElementById('cuerpoTabla');
-    cuerpo.innerHTML="";
+    const cuerpo1=document.getElementById('cuerpoTabla1');
+    const cuerpo2=document.getElementById('cuerpoTabla2');
+    cuerpo1.innerHTML="";
+    cuerpo2.innerHTML="";
     db.ref('registros').once('value', snapshot=>{
       snapshot.forEach(child=>{
         const datos=child.val();
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${datos.nombre}</td>
-          <td>${datos.telefono}</td>
-          <td>${datos.curp}</td>
-          <td>${datos.fecha}</td>
-          <td>${datos.edad}</td>
-          <td>${datos.servicio}</td>
-          <td>${datos.rango}</td>
-          <td><button onclick="borrarRegistro('${child.key}')">Eliminar</button></td>
-        `;
-        cuerpo.appendChild(tr);
+        const tr1=document.createElement('tr');
+        tr1.innerHTML=`<td>${datos.nombre}</td><td>${datos.telefono}</td><td>${datos.curp}</td><td>${datos.fecha}</td><td>${datos.edad}</td>`;
+        cuerpo1.appendChild(tr1);
+        const tr2=document.createElement('tr');
+        tr2.innerHTML=`<td>${datos.servicio}</td><td>${datos.rango}</td><td><button onclick="borrarRegistro('${child.key}')">Eliminar</button></td>`;
+        cuerpo2.appendChild(tr2);
       });
     });
   }
 
-  function borrarRegistro(key){ if(confirm("¿Seguro que deseas borrar este registro?")){ db.ref('registros/'+key).remove(()=>{ cargarRegistros(); }); } }
+  function borrarRegistro(key){
+    if(confirm("¿Seguro que deseas borrar este registro?")){
+      db.ref('registros/'+key).remove(()=>{ cargarRegistros(); });
+    }
+  }
 </script>
 </body>
 </html>
+
+
 
 
