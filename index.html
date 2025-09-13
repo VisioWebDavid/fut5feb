@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLUB 5 DE FEBRERO</title>
+  <style>
+    body { margin:0; font-family:'Segoe UI', sans-serif; background:#0a0a0a; color:#fff; }
+    nav { position:fixed; top:0; width:100%; background:#000; display:flex; justify-content:center; gap:20px; padding:15px; z-index:1000; flex-wrap:wrap; }
+    nav a { color:white; text-decoration:none; font-weight:bold; padding:8px 15px; border-radius:8px; transition:0.3s; }
+    nav a:hover { background:#ff1493; color:black; }
+    header { text-align:center; position:relative; height:200px; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+    header img.logo { max-width:120px; border-radius:15px; border:3px solid #ff1493; z-index:2; position:relative; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+    section { padding:80px 20px; max-width:1200px; margin:auto; }
+    .title { text-align:center; font-size:2rem; color:#ff1493; margin-bottom:40px; }
+    @media (max-width:600px){ nav{flex-direction:column;gap:10px;} header{height:150px;} header h1{font-size:2.2rem;} }
+
+    /* Servicios */
+    #servicios-container { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-bottom:60px; }
+    .servicio-card { background-color:#000; color:#ff1493; border-radius:15px; box-shadow:0 6px 12px #ff1493aa; padding:20px; flex:1 1 280px; max-width:300px; text-align:center; transition:transform 0.3s, box-shadow 0.3s; font-family:'Montserrat',sans-serif; cursor:pointer; }
+    .servicio-card:hover { transform:translateY(-10px); box-shadow:0 10px 20px #ff1493ff; }
+
+    /* Formulario */
+    #formReserva { max-width:600px; margin:0 auto 60px; background-color:#111; padding:25px; border-radius:20px; box-shadow:0 0 20px #ff1493aa; font-family:'Montserrat',sans-serif; color:#fff; }
+    #formReserva label { font-weight:700; margin-bottom:6px; display:block; }
+    #formReserva input, #formReserva select { width:100%; padding:10px 14px; margin-bottom:15px; border-radius:10px; border:1px solid #ff1493; background:#000; color:#ff1493; }
+    #formReserva button { width:100%; padding:12px 0; background:#ff1493; color:black; font-weight:700; border:none; border-radius:15px; cursor:pointer; transition:0.3s; }
+    #formReserva button:hover { background:#ff66b2; color:white; }
+
+    /* Mini cuadros de categorías seleccionadas */
+    #miniCuadrosCategorias { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px; }
+    .miniCuadroCategoria { background:#111; border:2px solid #ff1493; padding:10px 15px; border-radius:10px; position:relative; color:#ff1493; font-weight:bold; min-width:150px; }
+    .miniCuadroCategoria button { position:absolute; top:2px; right:5px; background:#ff1493; border:none; color:black; font-weight:bold; border-radius:50%; width:20px; height:20px; cursor:pointer; }
+
+    /* Panel Jefe */
+    #panelJefe { max-width:900px; margin:40px auto; display:none; }
+    #tablaJefe { display:none; }
+    #panelJefe table { width:100%; border-collapse:collapse; background:#111; color:#ff1493; border-radius:15px; overflow:hidden; box-shadow:0 0 20px #ff1493aa; }
+    #panelJefe th, #panelJefe td { padding:8px; border:1px solid #ff1493; text-align:center; }
+    #panelJefe th { background:#000; }
+    #panelJefe button { background:#ff1493; color:black; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; }
+
+    /* Mini cuadro flotante */
+    #miniCuadro { display:none; position:fixed; top:20px; right:20px; background:#111; color:#ff1493; padding:20px; border-radius:15px; box-shadow:0 0 15px #ff1493aa; z-index:10000; opacity:0; transition:opacity 0.5s ease, transform 0.5s ease; transform:translateY(-20px); }
+    #miniCuadro.show { display:block; opacity:1; transform:translateY(0); }
+    #miniCuadro button { background:#ff1493; color:black; border:none; padding:3px 8px; border-radius:5px; margin-top:10px; cursor:pointer; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#inicio">Inicio</a>
+  <a href="#servicios">Categorías</a>
+  <a href="#contacto">Registro</a>
+</nav>
+
+<header id="inicio" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:100px;">
+  <img src="https://i.postimg.cc/0yxFBFCV/5defeb.jpg" alt="Logo Club 5 de Febrero" class="logo" style="max-width:150px; border-radius:15px; border:3px solid #ff1493;">
+</header>
+
+<section id="servicios">
+  <h2 class="title">Categorías</h2>
+  <div id="servicios-container">
+    <div class="servicio-card" onclick="seleccionarServicio('Pandas')"><h3>Pandas</h3></div>
+    <div class="servicio-card" onclick="seleccionarServicio('Osos')"><h3>Osos</h3></div>
+    <div class="servicio-card" onclick="seleccionarServicio('Infantil')"><h3>Infantil</h3></div>
+    <div class="servicio-card" onclick="seleccionarServicio('Juvenil')"><h3>Juvenil</h3></div>
+  </div>
+  <div id="miniCuadrosCategorias"></div>
+</section>
+
+<section id="contacto">
+  <h2 class="title">Reserva tu Lugar / Contáctanos</h2>
+  <form id="formReserva" onsubmit="guardarEnFirebase(); return false;">
+    <label>Nombre Completo</label>
+    <input type="text" id="nombre" required placeholder="Tu nombre completo">
+    <label>Teléfono</label>
+    <input type="tel" id="telefono" required placeholder="Ej. 6671234567" pattern="[0-9]{7,15}">
+    <label>CURP</label>
+    <input type="text" id="curp" required placeholder="Ej. ABCD123456HDFRLL09">
+    <label>Fecha de nacimiento</label>
+    <input type="date" id="fecha" required onchange="calcularEdad()">
+    <label>Edad</label>
+    <input type="number" id="edad" readonly>
+    <label>Categoría</label>
+    <input type="text" id="servicio" readonly placeholder="Selecciona una categoría">
+    <label>Rango de años</label>
+    <select id="rango" required>
+      <option value="">Selecciona rango</option>
+    </select>
+    <button type="submit">💾 Guardar Registro</button>
+  </form>
+
+  <button onclick="mostrarPanelJefe()" style="margin-bottom:20px; background:#ff1493; color:black; padding:10px 20px; border:none; border-radius:10px; cursor:pointer;">Panel Jefe</button>
+
+  <div id="panelJefe">
+    <h3 style="text-align:center;">Registros de Jugadores</h3>
+    <div id="cuadroClave" style="text-align:center; margin-bottom:15px;">
+      <input type="password" id="claveJefe" placeholder="Ingresa clave" style="padding:5px 10px; border-radius:5px; border:1px solid #ff1493;">
+      <button onclick="validarClaveJefe()" style="padding:5px 10px; border-radius:5px; background:#ff1493; border:none; cursor:pointer;">Entrar</button>
+    </div>
+    <div id="tablaJefe">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th><th>Teléfono</th><th>CURP</th><th>Fecha Nac.</th><th>Edad</th><th>Categoría</th><th>Años</th><th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoTabla"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div id="miniCuadro"></div>
+
+<footer style="background:#111; color:#ff1493; text-align:center; padding:30px; font-family:'Montserrat',sans-serif;">
+  <p>📍 Ubicación: Campo 5 de Febrero, Culiacán, Sin., México</p>
+  <p>📸 Facebook: <a href="https://www.facebook.com/profile.php?id=100071139187215" target="_blank" style="color:#ff1493; text-decoration:none;">@Club5deFebrero</a></p>
+  <p>© 2025 Club 5 de Febrero. Todos los derechos reservados.</p>
+</footer>
+
+<!-- Firebase SDK (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCDLeLu87-RaNHl6yovrvt5C2ok4I7GAKQ",
+    authDomain: "futbol5feb-e8a5f.firebaseapp.com",
+    databaseURL: "https://futbol5feb-e8a5f-default-rtdb.firebaseio.com",
+    projectId: "futbol5feb-e8a5f",
+    storageBucket: "futbol5feb-e8a5f.appspot.com",
+    messagingSenderId: "945724589338",
+    appId: "1:945724589338:web:df132cc7da5d16e26bd8a3",
+    measurementId: "G-BJR78HRH6B"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  // Funciones
+  function calcularEdad(){
+    const fechaNac = new Date(document.getElementById('fecha').value);
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const m = hoy.getMonth() - fechaNac.getMonth();
+    if(m<0||(m===0 && hoy.getDate()<fechaNac.getDate())) edad--;
+    document.getElementById('edad').value=edad;
+  }
+
+  function mostrarMiniCuadro(texto){
+    const mini=document.getElementById('miniCuadro');
+    mini.innerHTML=texto+'<br><button onclick="cerrarMiniCuadro()">X</button>';
+    mini.classList.add('show');
+    setTimeout(()=>{ mini.classList.remove('show'); },5000);
+  }
+
+  function cerrarMiniCuadro(){
+    const mini=document.getElementById('miniCuadro');
+    mini.classList.remove('show');
+    mini.innerHTML="";
+  }
+
+  function seleccionarServicio(categoria){
+    const miniCont=document.getElementById('miniCuadrosCategorias');
+    const horarios={ "Pandas":"5:30-6:30","Osos":"5:30-6:30","Infantil":"5:30-6:30","Juvenil":"4:30-5:30" };
+    const anos={ "Pandas":"2018-2019","Osos":"2016-2017","Infantil":"2014-2015","Juvenil":"2012-2013" };
+    const div=document.createElement('div');
+    div.classList.add('miniCuadroCategoria');
+    div.innerHTML=`<strong>${categoria}</strong><br>${horarios[categoria]}<br>${anos[categoria]}<button onclick="this.parentElement.remove()">X</button>`;
+    miniCont.appendChild(div);
+    document.getElementById('servicio').value=categoria;
+    const rango=document.getElementById('rango');
+    rango.innerHTML=`<option value="${anos[categoria]}">${anos[categoria]}</option>`;
+  }
+
+  function guardarEnFirebase(){
+    const nombre=document.getElementById('nombre').value.trim();
+    const telefono=document.getElementById('telefono').value.trim();
+    const curp=document.getElementById('curp').value.trim();
+    const fecha=document.getElementById('fecha').value;
+    const edad=document.getElementById('edad').value;
+    const servicio=document.getElementById('servicio').value;
+    const rango=document.getElementById('rango').value;
+
+    if(!servicio||!rango){ alert("Selecciona categoría y rango antes de enviar."); return; }
+
+    const nuevoRegistro={ nombre, telefono, curp, fecha, edad, servicio, rango };
+    db.ref('registros').push(nuevoRegistro,()=>{
+      document.getElementById('nombre').value="";
+      document.getElementById('telefono').value="";
+      document.getElementById('curp').value="";
+      document.getElementById('fecha').value="";
+      document.getElementById('edad').value="";
+      document.getElementById('servicio').value="";
+      document.getElementById('rango').innerHTML='<option value="">Selecciona rango</option>';
+      document.getElementById('miniCuadrosCategorias').innerHTML="";
+      mostrarMiniCuadro(`✅ Guardado en Panel Jefe!`);
+    });
+  }
+
+  function mostrarPanelJefe(){
+    document.getElementById('panelJefe').style.display="block";
+    document.getElementById('tablaJefe').style.display="none";
+  }
+
+  function validarClaveJefe(){
+    const clave=document.getElementById('claveJefe').value;
+    if(clave==="OscarJr#17"){
+      mostrarMiniCuadro("🔑 Acceso concedido!");
+      document.getElementById('tablaJefe').style.display="block";
+      cargarRegistros();
+    } else{
+      mostrarMiniCuadro("❌ Clave incorrecta!");
+      document.getElementById('tablaJefe').style.display="none";
+    }
+  }
+
+  function cargarRegistros(){
+    const cuerpo=document.getElementById('cuerpoTabla');
+    cuerpo.innerHTML="";
+    db.ref('registros').once('value', snapshot=>{
+      snapshot.forEach(child=>{
+        const datos=child.val();
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${datos.nombre}</td>
+          <td>${datos.telefono}</td>
+          <td>${datos.curp}</td>
+          <td>${datos.fecha}</td>
+          <td>${datos.edad}</td>
+          <td>${datos.servicio}</td>
+          <td>${datos.rango}</td>
+          <td><button onclick="borrarRegistro('${child.key}')">Eliminar</button></td>
+        `;
+        cuerpo.appendChild(tr);
+      });
+    });
+  }
+
+  function borrarRegistro(key){
+    if(confirm("¿Seguro que deseas borrar este registro?")){
+      db.ref('registros/'+key).remove(()=>{ cargarRegistros(); });
+    }
+  }
+</script>
+</body>
+</html>
